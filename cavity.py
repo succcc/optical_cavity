@@ -28,9 +28,11 @@ class Cavity:
         self.T2 = 1-R2
         self.d = d
         self.lamb = lamb
+        self.k = 2*np.pi/self.lamb
         self.I0 = I0
         self.I0_in = self.T1*I0  # Initial intensity inside cavity
         self.E0 = np.sqrt(I0)
+        self.E0_in = np.sqrt(self.I0_in)
 
         self.nu0 = c / self.lamb
         self.W0 = np.power((self.lamb / np.pi) ** 2 * (
@@ -57,6 +59,29 @@ class Cavity:
     def intensity_i(self, freq):
         return self.I_max/(1 + (2*self.finesse/np.pi)**2 * np.sin(np.pi*freq/self.FSR)**2)
 
+    def field_i(self, freq):
+        k = 2*np.pi*freq/c
+        return np.sqrt(self.T1)*self.E0/(1-np.sqrt(self.R1*self.R2)*np.exp(2*1j*k*self.d))
+
+    def field_t(self, freq):
+        k = 2 * np.pi * freq / c
+        return np.sqrt(self.T2)*np.exp(1j*k*self.d)*self.field_i(freq)
+
+    def field_r(self, freq):
+        k = 2 * np.pi * freq / c
+        return (-1+np.sqrt(self.R1*self.R2)*(1+self.T1/self.R1)*np.exp(2*1j*k*self.d)) / \
+            (1-np.sqrt(self.R1*self.R2)*np.exp(2*1j*k*self.d))*np.sqrt(self.R1)*self.E0
+
+    # Intensity calculation through absolute square of field
+    def intensity_i2(self, freq):
+        return abs(self.field_i(freq))**2
+
+    def intensity_t(self, freq):
+        return abs(self.field_t(freq))**2
+
+    def intensity_r(self, freq):
+        return abs(self.field_r(freq))**2
+
     def set_d(self, d):
         self.__init__(self.roc1, self.roc2, self.pos1, d, self.R1, self.R2, self.lamb, self.I0)
 
@@ -77,7 +102,7 @@ class Cavity:
         else:
             print("Please check the input variables...")
             return 0, 0
-        return freq, self.intensity_i(freq)
+        return freq, self.intensity_i(freq), self.intensity_r(freq), self.intensity_t(freq)
 
     def report(self):
         print(c)

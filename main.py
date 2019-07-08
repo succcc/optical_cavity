@@ -30,6 +30,10 @@ c2 = Cavity(roc1=-10000000.0, roc2=-10.0*mm, pos1=0, d=5.0*mm, R1=0.99, R2=0.99,
 c2Spectrum = c2.get_response(wCenter=1042 * nm, fWidth=30 * ghz, num=100000)
 plt.plot((c2Spectrum[0]-c/c2.lamb)/ghz,
          c2Spectrum[1])
+plt.plot((c2Spectrum[0]-c/c2.lamb)/ghz,
+         c2Spectrum[2])
+plt.plot((c2Spectrum[0]-c/c2.lamb)/ghz,
+         c2Spectrum[3])
 
 plt.xlabel("Frequency, zero at 1042 nm (GHz)")
 plt.ylabel("I/I0")

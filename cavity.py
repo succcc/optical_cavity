@@ -49,18 +49,15 @@ class Cavity:
 
         self.finesse2 = np.pi * np.exp(-self.ar * d / 2) / (1 - np.exp(-self.ar * d))
         self.delta_nu = self.FSR / self.finesse  # approx
-        self.tau_p = 1 / (2 * np.pi * self.delta_nu)
+        self.tau_p = 1 / (2 * np.pi * self.delta_nu)  # life time
         self.tau_p2 = 1 / (c * self.ar)
         self.qFactor = self.nu0 / self.delta_nu
         self.qFactor_correct = 2 * np.pi * self.nu0 / (c * self.ar)
 
         self.I_max = self.I0_in/((1-self.r_abs)**2)
 
-    def intensity_i(self, freq):
-        return self.I_max/(1 + (2*self.finesse/np.pi)**2 * np.sin(np.pi*freq/self.FSR)**2)
-
     def field_i(self, freq):
-        k = 2*np.pi*freq/c
+        k = 2 * np.pi * freq / c
         return np.sqrt(self.T1)*self.E0/(1-np.sqrt(self.R1*self.R2)*np.exp(2*1j*k*self.d))
 
     def field_t(self, freq):
@@ -71,6 +68,9 @@ class Cavity:
         k = 2 * np.pi * freq / c
         return (-1+np.sqrt(self.R1*self.R2)*(1+self.T1/self.R1)*np.exp(2*1j*k*self.d)) / \
             (1-np.sqrt(self.R1*self.R2)*np.exp(2*1j*k*self.d))*np.sqrt(self.R1)*self.E0
+
+    def intensity_i(self, freq):
+        return self.I_max/(1 + (2*self.finesse/np.pi)**2 * np.sin(np.pi*freq/self.FSR)**2)
 
     # Intensity calculation through absolute square of field
     def intensity_i2(self, freq):
@@ -101,7 +101,7 @@ class Cavity:
             freq = np.linspace(c/wCenter - fWidth, c/wCenter + fWidth, num)
         else:
             print("Please check the input variables...")
-            return 0, 0
+            return 0, 0, 0, 0
         return freq, self.intensity_i(freq), self.intensity_r(freq), self.intensity_t(freq)
 
     def report(self):

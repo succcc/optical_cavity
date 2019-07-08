@@ -17,16 +17,19 @@ nm = 1e-9
 
 
 class Cavity:
-    def __init__(self, roc1, roc2, pos1, d, r1, r2, lamb, i0):
+    def __init__(self, roc1, roc2, pos1, d, R1, R2, lamb, I0):
         self.pos1 = pos1
         self.pos2 = pos1 + d
         self.roc1 = roc1
         self.roc2 = roc2
-        self.r1 = r1
-        self.r2 = r2
+        self.R1 = R1
+        self.R2 = R2
+        self.T1 = 1-R1
+        self.T2 = 1-R2
         self.d = d
         self.lamb = lamb
-        self.i0 = i0
+        self.I0 = I0
+        self.i0 = self.T1*I0
 
         self.nu0 = c / self.lamb
         self.W0 = np.power((self.lamb / np.pi) ** 2 * (
@@ -35,10 +38,10 @@ class Cavity:
         self.z0 = np.pi * self.W0 ** 2 / self.lamb
         self.FSR = 3e8 / 2 / self.d
         self.g1g2 = (1 + self.d / self.roc1) * (1 + self.d / self.roc2)
-        self.finesse = np.pi * (r1 * r2) ** (1 / 4) / (1 - np.sqrt(r1 * r2))
+        self.finesse = np.pi * (R1 * R2) ** (1 / 4) / (1 - np.sqrt(R1 * R2))
         self.a_s = 0  # Assuming no attenuation in cavity, only consider reflectivity of mirrors
 
-        self.ar = self.a_s + 1 / (2 * d) * np.log(1 / (r1 * r2))
+        self.ar = self.a_s + 1 / (2 * d) * np.log(1 / (R1 * R2))
         self.absr = np.sqrt(np.exp(-2*self.ar*self.d))
 
         self.finesse2 = np.pi * np.exp(-self.ar * d / 2) / (1 - np.exp(-self.ar * d))
@@ -54,10 +57,10 @@ class Cavity:
         return self.imax/(1 + (2*self.finesse/np.pi)**2 * np.sin(np.pi*freq/self.FSR)**2)
 
     def setD(self, d):
-        self.__init__(self.roc1, self.roc2, self.pos1, d, self.r1, self.r2, self.lamb)
+        self.__init__(self.roc1, self.roc2, self.pos1, d, self.R1, self.R2, self.lamb, self.I0)
 
     def setPos1(self, pos1):
-        self.__init__(self.roc1, self.roc2, pos1, self.d, self.r1, self.r2, self.lamb)
+        self.__init__(self.roc1, self.roc2, pos1, self.d, self.r1, self.r2, self.lamb, self.I0)
 
     def getSpectrum(self, wStart=None, wEnd=None, fStart=None, fEnd=None, wCenter=None, fWidth=None, num=1000):
         isWavelength = wStart or wEnd

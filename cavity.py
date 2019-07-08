@@ -59,23 +59,24 @@ class Cavity:
     def setPos1(self, pos1):
         self.__init__(self.roc1, self.roc2, pos1, self.d, self.r1, self.r2, self.lamb)
 
-    def getSpectrum(self, wStart=None, wEnd=None, fStart=None, fEnd=None, fCenter=None, fWidth=None, num=None):
+    def getSpectrum(self, wStart=None, wEnd=None, fStart=None, fEnd=None, wCenter=None, fWidth=None, num=1000):
         isWavelength = wStart or wEnd
         isFrequencyIntv = fStart or fEnd
-        isFrequencyCenter = fCenter or fWidth
-        if isWavelength and not (isFrequencyCenter or isFrequencyIntv):
+        isWavelengthCenter = wCenter or fWidth
+        if isWavelength and not (isWavelengthCenter or isFrequencyIntv):
             lamb = np.linspace(wStart, wEnd, num)
             freq = c / lamb
-        elif isFrequencyIntv and not (isWavelength or isFrequencyCenter):
+        elif isFrequencyIntv and not (isWavelength or isWavelengthCenter):
             freq = np.linspace(fStart, fEnd, num)
-        elif isFrequencyCenter and not (isWavelength or isFrequencyIntv):
-            freq = np.linspace(fCenter - fWidth, fCenter + fWidth, num)
+        elif isWavelengthCenter and not (isWavelength or isFrequencyIntv):
+            freq = np.linspace(c/wCenter - fWidth, c/wCenter + fWidth, num)
         else:
             print("Please check the input variables...")
-            return -1
+            return 0, 0
         return freq, self.intensity(freq)
 
     def report(self):
+        print(c)
         print("======================================")
         print("Printing parameters and derived values")
         print("-------------Resonance----------------")

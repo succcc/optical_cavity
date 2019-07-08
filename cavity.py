@@ -39,7 +39,7 @@ class Cavity:
         self.a_s = 0  # Assuming no attenuation in cavity, only consider reflectivity of mirrors
 
         self.ar = self.a_s + 1 / (2 * d) * np.log(1 / (r1 * r2))
-        self.absr = np.exp(-2*self.ar*self.d)
+        self.absr = np.sqrt(np.exp(-2*self.ar*self.d))
 
         self.finesse2 = np.pi * np.exp(-self.ar * d / 2) / (1 - np.exp(-self.ar * d))
         self.delta_nu = self.FSR / self.finesse  # approx

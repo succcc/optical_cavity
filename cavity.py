@@ -17,7 +17,7 @@ nm = 1e-9
 
 
 class Cavity:
-    def __init__(self, roc1, roc2, pos1, d, r1, r2, lamb):
+    def __init__(self, roc1, roc2, pos1, d, r1, r2, lamb, i0):
         self.pos1 = pos1
         self.pos2 = pos1 + d
         self.roc1 = roc1
@@ -26,6 +26,8 @@ class Cavity:
         self.r2 = r2
         self.d = d
         self.lamb = lamb
+        self.i0 = i0
+
         self.nu0 = c / self.lamb
         self.W0 = np.power((self.lamb / np.pi) ** 2 * (
                 -self.d * (self.roc1 + d) * (self.roc2 + self.d) * (self.roc1 + self.roc2 + self.d))
@@ -37,6 +39,8 @@ class Cavity:
         self.a_s = 0  # Assuming no attenuation in cavity, only consider reflectivity of mirrors
 
         self.ar = self.a_s + 1 / (2 * d) * np.log(1 / (r1 * r2))
+        self.absr = np.exp(-2*self.ar*self.d)
+
         self.finesse2 = np.pi * np.exp(-self.ar * d / 2) / (1 - np.exp(-self.ar * d))
         self.delta_nu = self.FSR / self.finesse  # approx
         self.tau_p = 1 / (2 * np.pi * self.delta_nu)
@@ -44,16 +48,18 @@ class Cavity:
         self.qFactor = self.nu0 / self.delta_nu
         self.qFactor_correct = 2 * np.pi * self.nu0 / (c * self.ar)
 
+        self.imax = self.i0/((1-self.absr)**2)
+
+    def intensity(self, freq):
+        return self.imax/(1 + (2*self.finesse/np.pi)**2 * np.sin(np.pi*freq/self.FSR)**2)
+
     def setD(self, d):
         self.__init__(self.roc1, self.roc2, self.pos1, d, self.r1, self.r2, self.lamb)
 
     def setPos1(self, pos1):
         self.__init__(self.roc1, self.roc2, pos1, self.d, self.r1, self.r2, self.lamb)
 
-    def intensity(self, lamb):
-        return 0
-
-    def drawFSR(self, wStart=None, wEnd=None, fStart=None, fEnd=None, fCenter=None, fWidth=None, num=None):
+    def getSpectrum(self, wStart=None, wEnd=None, fStart=None, fEnd=None, fCenter=None, fWidth=None, num=None):
         isWavelength = wStart or wEnd
         isFrequencyIntv = fStart or fEnd
         isFrequencyCenter = fCenter or fWidth
@@ -65,9 +71,9 @@ class Cavity:
         elif isFrequencyCenter and not (isWavelength or isFrequencyIntv):
             freq = np.linspace(fCenter - fWidth, fCenter + fWidth, num)
         else:
-            return 0
-
-        return 0
+            print("Please check the input variables...")
+            return -1
+        return freq, self.intensity(freq)
 
     def report(self):
         print("======================================")

@@ -1,8 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from pyqtgraph.Qt import QtGui, QtCore
+import pyqtgraph as pg
 from sympy.physics.optics import *
 from sympy import Symbol, Matrix
 from cavity import Cavity
+import sys
 
 inf_meter = 10000000.0
 
@@ -58,3 +61,56 @@ print("q(z) = ", p.q.n(), ", w(z) = ", p.w.n()/um)
 p = ThinLens(10*cm)*p
 p = FreeSpace(5*cm)*p
 print("q(z) = ", p.q.n(), ", w(z) = ", p.w.n()/um)
+
+
+class BeamPlot:
+    def __init__(self):
+        pg.setConfigOptions(antialias=False)
+        self.app = QtGui.QApplication(sys.argv)
+        self.win = pg.GraphicsWindow(title='Beam plotter')
+        self.win.setWindowTitle('Beam plotter')
+        # self.win.setGeometry(5, 115, 1910, 1070)
+
+        bf_xlabels = [(0, '0'), (2048, '2048'), (4096, '4096')]
+        bf_xaxis = pg.AxisItem(orientation='bottom')
+        bf_xaxis.setTicks([bf_xlabels])
+
+        bf_ylabels = [(0, '0'), (127, '128'), (255, '255')]
+        bf_yaxis = pg.AxisItem(orientation='left')
+        bf_yaxis.setTicks([bf_ylabels])
+
+        self.beam = self.win.addPlot(
+            title='Beam', axisItems={'bottom': bf_xaxis, 'left': bf_yaxis}
+        )
+        d1 = 20 * cm
+        f1 = 20 * cm
+        d2 = 40 * cm
+
+        beam = BeamParameter(1042 * nm, 0, w=c3.W0)
+
+        z_c = np.linspace(0, c3.d, 1000)
+
+
+        z1 = np.linspace(0, d1, 1000)
+        w = float(beam.w_0.n()) * np.sqrt(1 + (z1 / float(beam.z_r.n())) ** 2)
+        self.beam.plot(-z1, w)
+        self.beam.plot(-z1, -w)
+
+        beam = ThinLens(f1)*FreeSpace(d1)*beam
+        z2 = np.linspace(d1, d1+d2, 1000)
+        w = float(beam.w_0.n()) * np.sqrt(1 + ((z2-d1+float(beam.z.n())) / float(beam.z_r.n())) ** 2)
+        self.beam.plot(-z2, w)
+        self.beam.plot(-z2, -w)
+        print("q(z) = ", beam.q.n()/cm, ", w(z) = ", beam.w.n() / um)
+
+        self.beam.showGrid(x=True, y=True)
+
+    @staticmethod
+    def start():
+        if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
+            QtGui.QApplication.instance().exec_()
+
+
+if __name__ == '__main__':
+    app = BeamPlot()
+    app.start()

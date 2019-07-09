@@ -17,15 +17,17 @@ nm = 1e-9
 
 
 class Cavity:
-    def __init__(self, roc1, roc2, pos1, d, R1, R2, lamb, I0):
+    def __init__(self, roc1, roc2, pos1, d, R1, R2, lamb, I0, L1=0, L2=0):
         self.pos1 = pos1
         self.pos2 = pos1 + d
         self.roc1 = roc1
         self.roc2 = roc2
         self.R1 = R1
         self.R2 = R2
-        self.T1 = 1-R1
-        self.T2 = 1-R2
+        self.L1 = L1
+        self.L2 = L2
+        self.T1 = 1-R1-L1
+        self.T2 = 1-R2-L2
         self.d = d
         self.lamb = lamb
         self.k = 2*np.pi/self.lamb
@@ -34,6 +36,8 @@ class Cavity:
         self.E0 = np.sqrt(I0)
         self.E0_in = np.sqrt(self.I0_in)
 
+        self.losses = 2-self.R1-self.R2
+        self.b = 1/self.losses
         self.nu0 = c / self.lamb
         self.W0 = np.power((self.lamb / np.pi) ** 2 * (
                 -self.d * (self.roc1 + d) * (self.roc2 + self.d) * (self.roc1 + self.roc2 + self.d))
@@ -49,8 +53,9 @@ class Cavity:
 
         self.finesse2 = np.pi * np.exp(-self.ar * d / 2) / (1 - np.exp(-self.ar * d))
         self.delta_nu = self.FSR / self.finesse  # approx
-        self.tau_p = 1 / (2 * np.pi * self.delta_nu)  # life time
+        self.tau_p = 1 / (2 * np.pi * self.delta_nu)  # life time (Saleh)
         self.tau_p2 = 1 / (c * self.ar)
+        self.t_c = self.b/self.FSR  # life time from paper
         self.qFactor = self.nu0 / self.delta_nu
         self.qFactor_correct = 2 * np.pi * self.nu0 / (c * self.ar)
 
@@ -110,15 +115,15 @@ class Cavity:
         print("Printing parameters and derived values")
         print("-------------Resonance----------------")
 
+        print("b = {:0.2f}".format(self.b))
         print("Q = {:0.2f}".format(self.qFactor))
         print("F = {:0.2f}".format(self.finesse))
         print("FSR = {:0.2f} GHz".format(self.FSR / ghz))
         print("FWHM = {:0.2f} MHz".format(self.delta_nu / mhz))
         print("nu0 = {:0.2f} THz".format(self.nu0 / thz))
+        print("t_c = {:0.2f} us".format(self.tau_p / us))
 
         print("--------------Gaussian----------------")
         print("W0 = {:0.2f} um".format(self.W0 / um))
         print("z0 = {:0.2f} mm".format(self.z0 / mm))
         print("g1g2 = {:0.2f}".format(self.g1g2))
-
-        print("")

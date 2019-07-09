@@ -17,6 +17,8 @@ ms = 1 / khz
 us = 1 / mhz
 ns = 1 / ghz
 
+m = 1
+cm = 1e-2
 mm = 1e-3
 um = 1e-6
 nm = 1e-9
@@ -48,3 +50,11 @@ T = 90*ppm
 R = 1-L-T
 c3 = Cavity(roc1=-inf_meter, roc2=-10*mm, pos1=0, d=5.0*mm, R1=R, R2=R, L1=L, L2=L, lamb=1042*nm, I0=1)
 c3.report()
+
+p = BeamParameter(wavelen=1042*nm, z=0, w=c3.W0)
+print("q(z) = ", p.q.n(), ", w(z) = ", p.w.n()/um)
+p = FreeSpace(10*cm)*p
+print("q(z) = ", p.q.n(), ", w(z) = ", p.w.n()/um)
+p = ThinLens(10*cm)*p
+p = FreeSpace(5*cm)*p
+print("q(z) = ", p.q.n(), ", w(z) = ", p.w.n()/um)

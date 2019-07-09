@@ -1,4 +1,5 @@
 import numpy as np
+from sympy.physics.optics import *
 
 khz = 1e3
 mhz = 1e6
@@ -40,7 +41,7 @@ class Cavity:
         self.b = 1/self.losses
         self.nu0 = c / self.lamb
         self.W0 = np.power((self.lamb / np.pi) ** 2 * (
-                -self.d * (self.roc1 + d) * (self.roc2 + self.d) * (self.roc1 + self.roc2 + self.d))
+                -self.d * (self.roc1 + self.d) * (self.roc2 + self.d) * (self.roc1 + self.roc2 + self.d))
                            / (self.roc1 + self.roc2 + 2 * self.d) ** 2, 1 / 4)
         self.z0 = np.pi * self.W0 ** 2 / self.lamb
         self.FSR = c / 2 / self.d
